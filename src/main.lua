@@ -2,17 +2,23 @@ local Config = require('config')
 
 local players = {}
 
+--[[
+Stelle sicher, dass dieses Script als server_script in der fxmanifest.lua eingetragen ist!
+]]
+
+-- Funktioniert nur serversided!
+
 -- Function to deduct insurance cost
 local function deductInsurance()
     for playerId, vehicles in pairs(players) do
-        -- Prüfe ob Spieler online ist
+        -- Prüfe ob Spieler online ist (serverseitig)
         local xPlayer = ESX.GetPlayerFromId(playerId)
         if xPlayer then
             for _, vehicle in ipairs(vehicles) do
                 xPlayer.removeAccountMoney('bank', Config.insuranceCost)
                 -- Kennzeichen aus dem Fahrzeugobjekt holen (angenommen vehicle.plate)
                 local plate = vehicle.plate or 'Unbekanntes Kennzeichen'
-                TriggerClientEvent('esx:showNotification', playerId, 'Für dein Fahrzeug mit dem Kennzeichen ' .. plate .. ' wurden $' .. Config.insuranceCost .. ' Versicherungsgebühr abgezogen!')
+                TriggerClientEvent('esx:showNotification', xPlayer.source, 'Für dein Fahrzeug mit dem Kennzeichen ' .. plate .. ' wurden $' .. Config.insuranceCost .. ' Versicherungsgebühr abgezogen!')
             end
         end
     end
@@ -32,9 +38,9 @@ function RemovePlayer(playerId)
 end
 
 -- Set up a timer to deduct insurance every 1 minute (nur zum Testen)
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
-        Citizen.Wait(1 * 60 * 1000) -- 1 Minute in Millisekunden
+        Wait(1 * 60 * 1000) -- 1 Minute in Millisekunden
         deductInsurance()
     end
 end)
