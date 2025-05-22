@@ -1,4 +1,3 @@
-ESX = nil
 
 local Config = require('config')
 
