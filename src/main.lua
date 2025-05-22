@@ -37,12 +37,10 @@ function RemovePlayer(playerId)
     players[playerId] = nil
 end
 
--- Set up a timer to deduct insurance every 1 minute (nur zum Testen)
-if IsDuplicityVersion ~= nil and IsDuplicityVersion() then -- Sicherstellen, dass es wirklich nur serverseitig läuft
-    CreateThread(function()
-        while true do
-            Wait(1 * 60 * 1000) -- 1 Minute in Millisekunden
-            deductInsurance()
-        end
-    end)
-end
+-- Set up a timer to deduct insurance every konfigurierbares Intervall
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(Config.deductionInterval * 60 * 1000) -- Intervall in Minuten aus der Config
+        deductInsurance()
+    end
+end)
