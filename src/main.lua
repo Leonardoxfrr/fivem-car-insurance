@@ -38,9 +38,11 @@ function RemovePlayer(playerId)
 end
 
 -- Set up a timer to deduct insurance every 1 minute (nur zum Testen)
-CreateThread(function()
-    while true do
-        Wait(1 * 60 * 1000) -- 1 Minute in Millisekunden
-        deductInsurance()
-    end
-end)
+if IsDuplicityVersion ~= nil and IsDuplicityVersion() then -- Sicherstellen, dass es wirklich nur serverseitig läuft
+    CreateThread(function()
+        while true do
+            Wait(1 * 60 * 1000) -- 1 Minute in Millisekunden
+            deductInsurance()
+        end
+    end)
+end
