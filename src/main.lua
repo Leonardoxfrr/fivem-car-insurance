@@ -1,40 +1,28 @@
+ESX = nil
+TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+
 local Config = require('config')
 
-local players = {}
-
---[[
-Stelle sicher, dass dieses Script als server_script in der fxmanifest.lua eingetragen ist!
-]]
-
--- Funktioniert nur serversided!
-
--- Function to deduct insurance cost
+-- Function to deduct insurance cost for all online players and their vehicles from DB
 local function deductInsurance()
-    for playerId, vehicles in pairs(players) do
-        -- Prüfe ob Spieler online ist (serverseitig)
-        local xPlayer = ESX.GetPlayerFromId(playerId)
+    for _, playerId in ipairs(GetPlayers()) do
+        local xPlayer = ESX.GetPlayerFromId(tonumber(playerId))
         if xPlayer then
-            for _, vehicle in ipairs(vehicles) do
-                xPlayer.removeAccountMoney('bank', Config.insuranceCost)
-                -- Kennzeichen aus dem Fahrzeugobjekt holen (angenommen vehicle.plate)
-                local plate = vehicle.plate or 'Unbekanntes Kennzeichen'
-                TriggerClientEvent('esx:showNotification', xPlayer.source, 'Für dein Fahrzeug mit dem Kennzeichen ' .. plate .. ' wurden $' .. Config.insuranceCost .. ' Versicherungsgebühr abgezogen!')
-            end
+            -- Fahrzeuge aus der DB holen (Tabelle: owned_vehicles, Spalte: owner = identifier)
+            local identifier = xPlayer.getIdentifier()
+            MySQL.Async.fetchAll('SELECT plate FROM owned_vehicles WHERE owner = @identifier', {
+                ['@identifier'] = identifier
+            }, function(vehicles)
+                if vehicles and #vehicles > 0 then
+                    for _, vehicle in ipairs(vehicles) do
+                        xPlayer.removeAccountMoney('bank', Config.insuranceCost)
+                        local plate = vehicle.plate or 'Unbekanntes Kennzeichen'
+                        TriggerClientEvent('esx:showNotification', xPlayer.source, 'Für dein Fahrzeug mit dem Kennzeichen ' .. plate .. ' wurden $' .. Config.insuranceCost .. ' Versicherungsgebühr abgezogen!')
+                    end
+                end
+            end)
         end
     end
-end
-
--- Function to add a player and their vehicles
-function AddPlayer(playerId, vehicle)
-    if not players[playerId] then
-        players[playerId] = {}
-    end
-    table.insert(players[playerId], vehicle)
-end
-
--- Function to remove a player
-function RemovePlayer(playerId)
-    players[playerId] = nil
 end
 
 -- Set up a timer to deduct insurance every konfigurierbares Intervall
