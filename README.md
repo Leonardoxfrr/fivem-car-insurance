@@ -17,3 +17,7 @@ This script automatically deducts an insurance fee from each player's bank accou
 Open the file `config.lua` and adjust the following values:
 - `Config.insuranceCost` – Amount deducted per vehicle (default: 100)
 - `Config.deductionInterval` – Interval in minutes (e.g. 0.1667 for 10 seconds, 30 for 30 minutes)
+
+
+
+----
